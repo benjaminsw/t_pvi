@@ -27,7 +27,7 @@ PROBLEMS = {
     'xshape': XShape,
 }
 
-ALGORITHMS = ['pvi', 'tpvi', 'sm', 'svi', 'uvi']  # Added tpvi
+ALGORITHMS = ['tpvi', 'pvi'] #, 'sm', 'svi', 'uvi']  # Added tpvi
 
 def visualize(key, 
               ids,
