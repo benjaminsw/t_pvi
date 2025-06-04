@@ -1,0 +1,112 @@
+# scripts/sec_5.2/config/toy-tpvi-comparison.yaml
+default_parameters: &default_parameters
+    d_z: 2
+    kernel: 'norm_fixed_var_w_skip'
+    n_hidden: 512
+
+default_theta_lr: &default_theta_lr
+    lr: 1e-4
+
+experiment:
+    n_reruns: 10
+    n_updates: 15000
+    name: 'tpvi_comparison'
+    compute_metrics: False
+    use_jit: True
+
+pvi:
+    algorithm: 'pvi'
+    model: 
+        use_particles: True
+        n_particles: 100
+        <<: *default_parameters
+    theta_opt:
+        <<: *default_theta_lr
+        optimizer: 'rmsprop'
+        lr_decay: False
+        regularization: 1e-8
+        clip: False
+    r_opt:
+        lr: 1e-2
+        regularization: 1e-8
+    extra_alg:
+
+tpvi:
+    algorithm: 'tpvi'
+    model: 
+        use_particles: True
+        n_particles: 100
+        <<: *default_parameters
+    theta_opt:
+        <<: *default_theta_lr
+        optimizer: 'rmsprop'
+        lr_decay: False
+        regularization: 1e-8
+        clip: False
+    r_opt:
+        lr: 1e-2
+        regularization: 1e-8
+    extra_alg:
+        fudge: 0
+        mc_n_samples: 250
+        annealing_schedule: "polynomial"
+        lambda_0: 1e-2
+        lambda_min: 1e-8
+        gamma: 0.55
+        alpha: 0.01
+        t0: 1000
+        tau: 100
+        monitor_entropy: True
+        entropy_threshold: 0.1
+        diversity_threshold: 0.01
+
+svi:
+    algorithm: 'svi'
+    model:
+        use_particles: False
+        <<: *default_parameters
+    dual:
+        n_hidden: 512
+    theta_opt:
+        <<: *default_theta_lr
+        optimizer: 'rmsprop'
+        lr_decay: False
+        regularization: 1e-8
+        clip: False
+    extra_alg:
+
+uvi:
+    algorithm: 'uvi'
+    model:
+        use_particles: False
+        <<: *default_parameters
+    theta_opt:
+        <<: *default_theta_lr
+        optimizer: 'rmsprop'
+        lr_decay: False
+        regularization: 1e-8
+        clip: False
+    extra_alg:
+
+sm:
+    algorithm: 'sm'
+    model:
+        use_particles: False
+        <<: *default_parameters
+    theta_opt:
+        <<: *default_theta_lr
+        optimizer: 'rmsprop'
+        lr_decay: True
+        min_lr: 1e-5
+        regularization: 1e-8
+        clip: False
+    dual:
+        n_hidden: 512
+    dual_opt:
+        lr: 1e-3
+        min_lr: 1e-5
+        regularization: 1e-8
+        optimizer: 'rmsprop'
+        lr_decay: True
+        clip: False
+    extra_alg:
