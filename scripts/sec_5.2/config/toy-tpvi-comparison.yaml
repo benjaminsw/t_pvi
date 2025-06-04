@@ -1,16 +1,18 @@
-# scripts/sec_5.2/config/toy-tpvi-comparison.yaml
+# scripts/sec_5.2/config/toy-tpvi-memory-optimized.yaml
+# Memory-optimized configuration to avoid CUDA OOM errors
+
 default_parameters: &default_parameters
     d_z: 2
     kernel: 'norm_fixed_var_w_skip'
-    n_hidden: 512
+    n_hidden: 256  # Reduced from 512
 
 default_theta_lr: &default_theta_lr
     lr: 1e-4
 
 experiment:
-    n_reruns: 10
-    n_updates: 15000
-    name: 'tpvi_comparison'
+    n_reruns: 3      # Reduced from 10
+    n_updates: 3000  # Reduced from 15000
+    name: 'tpvi_memory_optimized'
     compute_metrics: False
     use_jit: True
 
@@ -18,24 +20,7 @@ pvi:
     algorithm: 'pvi'
     model: 
         use_particles: True
-        n_particles: 100
-        <<: *default_parameters
-    theta_opt:
-        <<: *default_theta_lr
-        optimizer: 'rmsprop'
-        lr_decay: False
-        regularization: 1e-8
-        clip: False
-    r_opt:
-        lr: 1e-2
-        regularization: 1e-8
-    extra_alg:
-
-tpvi:
-    algorithm: 'tpvi'
-    model: 
-        use_particles: True
-        n_particles: 100
+        n_particles: 50  # Reduced from 100
         <<: *default_parameters
     theta_opt:
         <<: *default_theta_lr
@@ -48,25 +33,45 @@ tpvi:
         regularization: 1e-8
     extra_alg:
         fudge: 0
-        mc_n_samples: 250
+        mc_n_samples: 100  # Reduced from 250
+
+tpvi:
+    algorithm: 'tpvi'
+    model: 
+        use_particles: True
+        n_particles: 50  # Reduced from 100
+        <<: *default_parameters
+    theta_opt:
+        <<: *default_theta_lr
+        optimizer: 'rmsprop'
+        lr_decay: False
+        regularization: 1e-8
+        clip: False
+    r_opt:
+        lr: 1e-2
+        regularization: 1e-8
+    extra_alg:
+        fudge: 0
+        mc_n_samples: 100  # Reduced from 250
         annealing_schedule: "polynomial"
         lambda_0: 1e-2
         lambda_min: 1e-8
         gamma: 0.55
         alpha: 0.01
-        t0: 1000
-        tau: 100
+        t0: 500   # Reduced from 1000
+        tau: 50   # Reduced from 100
         monitor_entropy: True
         entropy_threshold: 0.1
         diversity_threshold: 0.01
 
+# Minimal configurations for other algorithms (if needed)
 svi:
     algorithm: 'svi'
     model:
         use_particles: False
         <<: *default_parameters
     dual:
-        n_hidden: 512
+        n_hidden: 256
     theta_opt:
         <<: *default_theta_lr
         optimizer: 'rmsprop'
@@ -74,6 +79,7 @@ svi:
         regularization: 1e-8
         clip: False
     extra_alg:
+        mc_n_samples: 100
 
 uvi:
     algorithm: 'uvi'
@@ -87,6 +93,7 @@ uvi:
         regularization: 1e-8
         clip: False
     extra_alg:
+        mc_n_samples: 100
 
 sm:
     algorithm: 'sm'
@@ -101,7 +108,7 @@ sm:
         regularization: 1e-8
         clip: False
     dual:
-        n_hidden: 512
+        n_hidden: 256
     dual_opt:
         lr: 1e-3
         min_lr: 1e-5
@@ -110,3 +117,5 @@ sm:
         lr_decay: True
         clip: False
     extra_alg:
+        dual_steps: 1
+        train_steps: 1
